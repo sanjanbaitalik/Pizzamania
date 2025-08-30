@@ -1,0 +1,239 @@
+<section class="hero py-16">
+    <div class="container mx-auto flex items-center justify-between">
+        <div class="w-1/2">
+            <h6 class="text-lg"><em>Are you hungry?</em></h6>
+            <h1 class="text-3xl md:text-6xl font-bold">Don't wait !</h1>
+            <button class="px-6 py-2 rounded-full text-white font-bold mt-4 btn-primary">Order Now</button>
+        </div>
+        <div class="w-1/2">
+            <img src="/img/hero-pizza.png" alt="">
+        </div>
+    </div>
+</section>
+<!-- home.ejs -->
+<section class="menu container mx-auto py-8">
+    <h1 class="text-xl font-bold mb-8">All Foods</h1>
+    <form method="GET" action="/" class="mb-8">
+        <input type="text" name="search" id="search" placeholder="Search foods" class="border p-2 rounded">
+        <div id="recommendations" class="p-2 rounded bg-white"></div>
+        <select name="restaurant" class="border p-2 rounded">
+            <option value="">All Restaurants</option>
+            <% uniqueRestaurants.forEach(function(restaurant) { %>
+                <option value="<%= restaurant %>"><%= restaurant %></option>
+            <% }) %>
+        </select>
+        <select name="size" class="border p-2 rounded">
+            <option value="">Veg/Non-Veg</option>
+            <% uniqueSizes.forEach(function(size) { %>
+                <option value="<%= size %>"><%= size %></option>
+            <% }) %>
+        </select>
+        <select name="toppings" class="border p-2 rounded">
+            <option value="">All Sides</option>
+            <% uniqueToppings.forEach(function(topping) { %>
+                <option value="<%= topping %>"><%= topping %></option>
+            <% }) %>
+        </select>
+        <button type="submit" class="btn-primary px-4 py-2 rounded text-white">Filter</button>
+    </form>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 col-gap-12 row-gap-16">
+        <% pizzas.forEach(function(pizza) { %>
+        <div class="w-full md:w-64">
+            <img class="h-40 mb-4 mx-auto" src="<%= pizza.image %>" alt="<%= pizza.name %>">
+            <div class="text-center">
+                <h2 class="mb-4 text-lg"><%= pizza.name %></h2>
+                <span class="size py-1 px-4 rounded-full uppercase text-xs"><%= pizza.size %></span>
+                <div class="flex items-center justify-around mt-6">
+                    <span class="font-bold text-lg">₹<%= pizza.price %></span>
+                    <button data-pizza="<%= JSON.stringify(pizza) %>"
+                        class="customize-pizza py-1 px-6 rounded-full flex items-center font-bold">
+                        <span>+</span>
+                        <span class="ml-4">Customize</span>
+                    </button>
+                    <button data-pizza="<%= JSON.stringify(pizza) %>"
+                        class="add-to-cart py-1 px-6 rounded-full flex items-center font-bold">
+                        <span>+</span>
+                        <span class="ml-4">Add to Cart</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</section>
+
+<!-- Customize Pizza Modal -->
+<div id="customizePizzaModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Customize Your Pizza</h2>
+            <button id="closeCustomize" class="text-gray-600 hover:text-gray-900">&times;</button>
+        </div>
+        <form id="customizePizzaForm">
+            <input type="hidden" id="pizzaId" name="pizzaId">
+            <div class="form-group">
+                <label for="toppings">Select Toppings</label>
+                <select id="toppings" name="toppings" multiple class="border p-2 rounded w-full">
+                    <!-- Toppings will be populated dynamically -->
+                </select>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button type="button" id="cancelCustomize" class="btn-secondary px-4 py-2 rounded text-white mr-2">Cancel</button>
+                <button type="submit" class="btn-primary px-4 py-2 rounded text-white">Add to Cart</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- No Toppings Available Modal -->
+<div id="noToppingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">No Toppings Available</h2>
+            <button id="closeNoToppings" class="text-gray-600 hover:text-gray-900">&times;</button>
+        </div>
+        <p class="mb-4">No toppings are available for this pizza. You can proceed to checkout or continue browsing.</p>
+        <div class="flex justify-end mt-4">
+            <button type="button" id="closeNoToppingsBtn" class="btn-primary px-4 py-2 rounded text-white">Close</button>
+            <button type="button" id="addToCartNoToppings" class="btn-primary px-4 py-2 rounded text-white">Add to Cart</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.2.0-beta/noty.min.js"></script>
+<script>
+    document.querySelectorAll('.customize-pizza').forEach(button => {
+        button.addEventListener('click', function() {
+            const pizza = JSON.parse(this.dataset.pizza);
+            document.getElementById('pizzaId').value = pizza._id;
+            const toppingsSelect = document.getElementById('toppings');
+            toppingsSelect.innerHTML = '';
+
+            if (pizza.toppings && pizza.toppings.length > 0) {
+                pizza.toppings.forEach(topping => {
+                    const option = document.createElement('option');
+                    option.value = topping;
+                    option.textContent = topping;
+                    toppingsSelect.appendChild(option);
+                });
+                document.getElementById('customizePizzaModal').classList.remove('hidden');
+            } else {
+                document.getElementById('noToppingsModal').classList.remove('hidden');
+            }
+        });
+    });
+
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const pizzaId = document.getElementById('pizzaId').value;
+            fetch('/update-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: pizzaId, toppings: [] })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#cartCounter').innerText = data.totalQty;
+                new Noty({
+                    type: 'success',
+                    timeout: 1000,
+                    text: 'Pizza added to cart',
+                    progressBar: false,
+                }).show();
+            })
+            .catch(err => {
+                new Noty({
+                    type: 'error',
+                    timeout: 1000,
+                    text: 'Something went wrong',
+                    progressBar: false,
+                }).show();
+            });
+        });
+    });
+
+    document.getElementById('closeCustomize').addEventListener('click', function() {
+        document.getElementById('customizePizzaModal').classList.add('hidden');
+    });
+
+    document.getElementById('cancelCustomize').addEventListener('click', function() {
+        document.getElementById('customizePizzaModal').classList.add('hidden');
+    });
+
+    document.getElementById('closeNoToppings').addEventListener('click', function() {
+        document.getElementById('noToppingsModal').classList.add('hidden');
+    });
+
+    document.getElementById('closeNoToppingsBtn').addEventListener('click', function() {
+        document.getElementById('noToppingsModal').classList.add('hidden');
+    });
+
+    document.getElementById('addToCartNoToppings').addEventListener('click', function() {
+        const pizzaId = document.getElementById('pizzaId').value;
+        fetch('/update-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: pizzaId, toppings: [] })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('noToppingsModal').classList.add('hidden');
+            document.querySelector('#cartCounter').innerText = data.totalQty;
+            new Noty({
+                type: 'success',
+                timeout: 1000,
+                text: 'Pizza added to cart',
+                progressBar: false,
+            }).show();
+        })
+        .catch(err => {
+            new Noty({
+                type: 'error',
+                timeout: 1000,
+                text: 'Something went wrong',
+                progressBar: false,
+            }).show();
+        });
+    });
+
+    document.getElementById('customizePizzaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const pizzaId = formData.get('pizzaId');
+        const toppings = formData.getAll('toppings');
+        const pizza = {
+            _id: pizzaId,
+            toppings: toppings
+        };
+        fetch('/update-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pizza)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('customizePizzaModal').classList.add('hidden');
+            document.querySelector('#cartCounter').innerText = data.totalQty;
+            new Noty({
+                type: 'success',
+                timeout: 1000,
+                text: 'Pizza added to cart',
+                progressBar: false,
+            }).show();
+        })
+        .catch(err => {
+            new Noty({
+                type: 'error',
+                timeout: 1000,
+                text: 'Something went wrong',
+                progressBar: false,
+            }).show();
+        });
+    });
+</script>

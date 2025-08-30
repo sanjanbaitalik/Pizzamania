@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .review {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .review:last-child {
+            border-bottom: none;
+        }
+        .review h3 {
+            margin: 0;
+            color: #555;
+        }
+        .review p {
+            margin: 5px 0;
+            color: #777;
+        }
+        .review .rating {
+            color: #f39c12;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background: #0056b3;
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 2em;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating input:hover ~ label,
+        .star-rating label:hover ~ label {
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Customer Reviews</h2>
+        <div id="reviews-container">
+            <% if (reviews.length > 0) { %>
+                <% reviews.forEach(function(review) { %>
+                <div class="review">
+                    <h3><%= review.userId ? review.userId.name : 'Anonymous' %> reviewed <%= review.restaurant %></h3>
+                    <p class="rating">Rating: <%= review.rating %> <i class="fas fa-star"></i></p>
+                    <p><%= review.comment %></p>
+                </div>
+                <% }) %>
+            <% } else { %>
+                <p class="text-center text-gray-500">No reviews yet. Be the first to leave a review!</p>
+            <% } %>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Leave a Review</h2>
+        <form action="/reviews" method="POST">
+            <div class="form-group">
+                <label for="restaurant">Restaurant</label>
+                <select id="restaurant" name="restaurant" required>
+                    <% restaurants.forEach(function(restaurant) { %>
+                        <option value="<%= restaurant.name %>"><%= restaurant.name %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="rating">Rating</label>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required /><label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comment">Comment</label>
+                <textarea id="comment" name="comment" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit Review</button>
+            </div>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+    <script>
+        <% if (messages.success) { %>
+            new Noty({
+                type: 'success',
+                layout: 'topRight',
+                text: '<%= messages.success %>',
+                timeout: 3000,
+                progressBar: true,
+            }).show();
+        <% } %>
+        <% if (messages.error) { %>
+            new Noty({
+                type: 'error',
+                layout: 'topRight',
+                text: '<%= messages.error %>',
+                timeout: 3000,
+                progressBar: true,
+            }).show();
+        <% } %>
+    </script>
+</body>
+</html>
